@@ -4,21 +4,23 @@ import MoviesList from './component/MoviesList.jsx'
 
 const App = () => {
     const [movies, setMovies] = useState([]);
-    const fetchMoviesHandler = () => {
-        fetch('https://swapi.dev/api/films/').then(response => {
-           return response.json();
-        }).then((data) => {
-            const transfromedMovies = data.results.map((movieData) => {
-                return {
-                    id: movieData.episode_id,
-                    title: movieData.title,
-                    releaseDate: movieData.release_date,
-                    openingText: movieData.opening_crawl
-                }
-            })
-            setMovies(transfromedMovies);
+    const fetchMoviesHandler = async () => {
+        const response = await fetch('https://swapi.dev/api/films/');
+        const data = await response.json();
+ 
+        const transformedMovies = data.results.map((movieData) => {
+            return {
+                id: movieData.episode_id,
+                title: movieData.title,
+                releaseDate: movieData.release_date,
+                openingText: movieData.opening_crawl
+            }
         })
+
+        setMovies(transformedMovies);
+
     }
+
 
 
     return (
