@@ -33,6 +33,7 @@ const App = () => {
             </section>
             <section>
                 {!loading && movies.length > 0 &&  <MoviesList movies={movies} />}
+                {!loading && movies.length === 0 &&  <p>No Movies found</p>}
                 {loading && <VscLoading size={'40px'}/>}
             </section>
         </React.Fragment>
