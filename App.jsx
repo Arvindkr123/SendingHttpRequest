@@ -27,7 +27,7 @@ const App = () => {
                     id: key,
                     title: data[key].title,
                     openingText: data[key].openingText,
-                    releaseDate:data[key].releaseDate
+                    releaseDate: data[key].releaseDate
                 })
             }
             setMovies(loadedMovies);
@@ -54,10 +54,26 @@ const App = () => {
 
     }
 
+    async function deleteMovieHandler(movieId) {
+        try {
+            const response = await fetch(`https://http-request-fd656-default-rtdb.firebaseio.com/movies/${movieId}.json`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!');
+            }
+
+            setMovies((prevMovies) => prevMovies.filter((movie) => movie.id !== movieId));
+        } catch (error) {
+            setError(error.message);
+        }
+    }
+
     let content = <p>Found no movies.</p>;
 
     if (movies.length > 0) {
-        content = <MoviesList movies={movies} />;
+        content = <MoviesList movies={movies} onDeleteMovie={deleteMovieHandler} />;
     }
 
     if (error) {

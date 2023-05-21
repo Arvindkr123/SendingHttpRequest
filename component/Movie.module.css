@@ -19,6 +19,7 @@
   font-size: 1rem;
 }
 
-button{
+.movie .btn {
   background-color: red;
+  cursor: pointer;
 }
