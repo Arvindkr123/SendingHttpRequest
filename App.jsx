@@ -1,65 +1,98 @@
-import React, { useCallback, useState , useEffect} from 'react'
-import './App.css'
-import MoviesList from './component/MoviesList.jsx'
-import { VscLoading } from 'react-icons/vsc'
+import React, { useCallback, useState, useEffect } from 'react';
+import './App.css';
+import MoviesList from './component/MoviesList.jsx';
+import { VscLoading } from 'react-icons/vsc';
 
 function App() {
-    const [movies, setMovies] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
+  const [movies, setMovies] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [retryTimer, setRetryTimer] = useState(null);
 
-    const fetchMoviesHandler = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
+  const fetchMoviesHandler = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    setRetryCount(0);
+
+    const retryDelay = 5000; // 5 seconds
+
+    const retryApiCall = () => {
+      clearTimeout(retryTimer);
+      setRetryTimer(
+        setTimeout(async () => {
+          try {
             const response = await fetch('https://swapi.dev/api/films/');
             if (!response.ok) {
-                throw new Error('Something went wrong!');
+              throw new Error('Something went wrong!');
             }
 
             const data = await response.json();
 
-            const transformedMovies = data.results.map((movieData) => {
-                return {
-                    id: movieData.episode_id,
-                    title: movieData.title,
-                    openingText: movieData.opening_crawl,
-                    releaseDate: movieData.release_date,
-                };
-            });
+            const transformedMovies = data.results.map((movieData) => ({
+              id: movieData.episode_id,
+              title: movieData.title,
+              openingText: movieData.opening_crawl,
+              releaseDate: movieData.release_date,
+            }));
             setMovies(transformedMovies);
-        } catch (error) {
+            setIsLoading(false);
+            setError(null);
+          } catch (error) {
             setError(error.message);
-        }
-        setIsLoading(false);
-    }, []);
+            setRetryCount((prevRetryCount) => prevRetryCount + 1);
+            retryApiCall();
+          }
+        }),
+        retryDelay
+      );
+    };
 
-    useEffect(() => {
-        fetchMoviesHandler();
-    }, [fetchMoviesHandler]);
+    retryApiCall();
+  }, []);
 
-    let content = <p>Found no movies.</p>;
+  useEffect(() => {
+    fetchMoviesHandler();
+  }, [fetchMoviesHandler]);
 
-    if (movies.length > 0) {
-        content = <MoviesList movies={movies} />;
-    }
+  const cancelRetryHandler = () => {
+    clearTimeout(retryTimer);
+    setIsLoading(false);
+  };
 
-    if (error) {
-        content = <p>{error}</p>;
-    }
+  let content = <p>Found no movies.</p>;
 
-    if (isLoading) {
-        content = <p>Loading...</p>;
-    }
+  if (movies.length > 0) {
+    content = <MoviesList movies={movies} />;
+  }
 
-    return (
-        <React.Fragment>
-            <section>
-                <button onClick={fetchMoviesHandler}>Fetch Movies</button>
-            </section>
-            <section>{content}</section>
-        </React.Fragment>
+  if (error) {
+    content = (
+      <div>
+        <p>{error}</p>
+        <button onClick={fetchMoviesHandler}>Retry</button>
+        <button onClick={cancelRetryHandler}>Cancel</button>
+      </div>
     );
+  }
+
+  if (isLoading) {
+    content = (
+      <div>
+        <p>Loading...</p>
+        <button onClick={cancelRetryHandler}>Cancel</button>
+      </div>
+    );
+  }
+
+  return (
+    <React.Fragment>
+      <section>
+        <button onClick={fetchMoviesHandler}>Fetch Movies</button>
+      </section>
+      <section>{content}</section>
+    </React.Fragment>
+  );
 }
 
 export default App;
