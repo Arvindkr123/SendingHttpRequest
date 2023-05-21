@@ -59,7 +59,7 @@ function App() {
         clearTimeout(retryTimer);
         setIsLoading(false);
     };
-
+    
     let content = <p>Found no movies.</p>;
 
     if (movies.length > 0) {
