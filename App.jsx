@@ -1,10 +1,13 @@
 import React, { useState } from 'react'
 import './App.css'
 import MoviesList from './component/MoviesList.jsx'
+import {VscLoading} from 'react-icons/vsc'
 
 const App = () => {
     const [movies, setMovies] = useState([]);
+    const [loading, setLoading] = useState(false);
     const fetchMoviesHandler = async () => {
+        setLoading(true);
         const response = await fetch('https://swapi.dev/api/films/');
         const data = await response.json();
  
@@ -18,7 +21,7 @@ const App = () => {
         })
 
         setMovies(transformedMovies);
-
+        setLoading(false);
     }
 
 
@@ -29,7 +32,8 @@ const App = () => {
                 <button onClick={fetchMoviesHandler}>Fetch Movies</button>
             </section>
             <section>
-                <MoviesList movies={movies} />
+                {!loading && movies.length > 0 &&  <MoviesList movies={movies} />}
+                {loading && <VscLoading size={'40px'}/>}
             </section>
         </React.Fragment>
     )
